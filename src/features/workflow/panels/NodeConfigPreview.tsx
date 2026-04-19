@@ -1,11 +1,13 @@
 import {
   Bot,
+  CalendarDays,
   CheckCircle2,
   ClipboardList,
   Flag,
   ShieldCheck,
   Sparkles,
   Trash2,
+  UserRound,
 } from "lucide-react";
 import type { SelectedWorkflowNode } from "../components/WorkflowCanvas";
 import type { AutomationAction } from "../api/mockWorkflowApi";
@@ -26,6 +28,35 @@ function prettyLabel(text: string) {
 function InputField({
   label,
   value,
+  type = "text",
+  icon,
+  onChange,
+}: {
+  label: string;
+  value: string | number;
+  type?: string;
+  icon?: React.ReactNode;
+  onChange: (value: string) => void;
+}) {
+  return (
+    <label className="block rounded-2xl border border-slate-200 bg-white p-3 shadow-sm">
+      <p className="flex items-center gap-2 text-[11px] font-semibold uppercase tracking-[0.18em] text-slate-400">
+        {icon}
+        {label}
+      </p>
+      <input
+        type={type}
+        value={value}
+        onChange={(event) => onChange(event.target.value)}
+        className="mt-2 w-full border-none bg-transparent p-0 text-sm font-medium text-slate-800 outline-none"
+      />
+    </label>
+  );
+}
+
+function TextareaField({
+  label,
+  value,
   onChange,
 }: {
   label: string;
@@ -37,10 +68,11 @@ function InputField({
       <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-slate-400">
         {label}
       </p>
-      <input
+      <textarea
+        rows={3}
         value={value}
         onChange={(event) => onChange(event.target.value)}
-        className="mt-2 w-full border-none bg-transparent p-0 text-sm font-medium text-slate-800 outline-none"
+        className="mt-2 w-full resize-none border-none bg-transparent p-0 text-sm font-medium text-slate-800 outline-none"
       />
     </label>
   );
@@ -73,6 +105,35 @@ function SelectField({
           </option>
         ))}
       </select>
+    </label>
+  );
+}
+
+function ToggleField({
+  label,
+  checked,
+  onChange,
+}: {
+  label: string;
+  checked: boolean;
+  onChange: (checked: boolean) => void;
+}) {
+  return (
+    <label className="flex items-center justify-between rounded-2xl border border-slate-200 bg-white px-4 py-3 shadow-sm">
+      <span className="text-sm font-semibold text-slate-700">{label}</span>
+      <button
+        type="button"
+        onClick={() => onChange(!checked)}
+        className={`relative h-7 w-12 rounded-full transition ${
+          checked ? "bg-emerald-500" : "bg-slate-300"
+        }`}
+      >
+        <span
+          className={`absolute top-1 h-5 w-5 rounded-full bg-white transition ${
+            checked ? "left-6" : "left-1"
+          }`}
+        />
+      </button>
     </label>
   );
 }
@@ -114,119 +175,6 @@ export function NodeConfigPreview({
     automations.find((automation) => automation.id === selectedNode.actionId) ??
     automations[0];
 
-  const extraFieldsByKind = {
-    start: (
-      <>
-        <InputField
-          label="Template Label"
-          value={selectedNode.metaLabel ?? ""}
-          onChange={(value) => onChange({ metaLabel: value })}
-        />
-        <InputField
-          label="Template Value"
-          value={selectedNode.metaValue ?? ""}
-          onChange={(value) => onChange({ metaValue: value })}
-        />
-      </>
-    ),
-    task: (
-      <>
-        <InputField
-          label="Owner Label"
-          value={selectedNode.metaLabel ?? ""}
-          onChange={(value) => onChange({ metaLabel: value })}
-        />
-        <InputField
-          label="Assignee / Team"
-          value={selectedNode.metaValue ?? ""}
-          onChange={(value) => onChange({ metaValue: value })}
-        />
-      </>
-    ),
-    approval: (
-      <>
-        <InputField
-          label="Role Label"
-          value={selectedNode.metaLabel ?? ""}
-          onChange={(value) => onChange({ metaLabel: value })}
-        />
-        <InputField
-          label="Approver Role"
-          value={selectedNode.metaValue ?? ""}
-          onChange={(value) => onChange({ metaValue: value })}
-        />
-      </>
-    ),
-    automated: (
-      <>
-        <SelectField
-          label="Automation Action"
-          value={selectedNode.actionId ?? activeAutomation?.id ?? ""}
-          options={automations.map((automation) => ({
-            value: automation.id,
-            label: automation.label,
-          }))}
-          onChange={(value) => {
-            const nextAutomation =
-              automations.find((automation) => automation.id === value) ??
-              automations[0];
-
-            const nextParams = Object.fromEntries(
-              (nextAutomation?.paramKeys ?? []).map((key) => [
-                key,
-                selectedNode.params?.[key] ?? "",
-              ])
-            );
-
-            onChange({
-              actionId: nextAutomation?.id,
-              metaLabel: "Action",
-              metaValue: nextAutomation?.label ?? "Automation",
-              subtitle: nextAutomation?.description ?? selectedNode.subtitle,
-              params: nextParams,
-            });
-          }}
-        />
-
-        <InputField
-          label="Action Label"
-          value={selectedNode.metaLabel ?? ""}
-          onChange={(value) => onChange({ metaLabel: value })}
-        />
-
-        {activeAutomation?.paramKeys.map((paramKey) => (
-          <InputField
-            key={paramKey}
-            label={prettyLabel(paramKey)}
-            value={selectedNode.params?.[paramKey] ?? ""}
-            onChange={(value) =>
-              onChange({
-                params: {
-                  ...(selectedNode.params ?? {}),
-                  [paramKey]: value,
-                },
-              })
-            }
-          />
-        ))}
-      </>
-    ),
-    end: (
-      <>
-        <InputField
-          label="Status Label"
-          value={selectedNode.metaLabel ?? ""}
-          onChange={(value) => onChange({ metaLabel: value })}
-        />
-        <InputField
-          label="Status Value"
-          value={selectedNode.metaValue ?? ""}
-          onChange={(value) => onChange({ metaValue: value })}
-        />
-      </>
-    ),
-  };
-
   return (
     <div className="space-y-4">
       <div className={`rounded-2xl border p-4 ${tone}`}>
@@ -246,19 +194,183 @@ export function NodeConfigPreview({
         <p className="mt-3 text-sm opacity-90">{selectedNode.subtitle}</p>
       </div>
 
-      <div className="grid gap-3">
-        <InputField
-          label="Node Title"
-          value={selectedNode.title}
-          onChange={(value) => onChange({ title: value })}
-        />
-        <InputField
-          label="Node Subtitle"
-          value={selectedNode.subtitle}
-          onChange={(value) => onChange({ subtitle: value })}
-        />
-        {extraFieldsByKind[selectedNode.kind]}
-      </div>
+      {selectedNode.kind === "start" && (
+        <div className="grid gap-3">
+          <InputField
+            label="Start Title"
+            value={selectedNode.title}
+            onChange={(value) => onChange({ title: value })}
+          />
+          <TextareaField
+            label="Subtitle"
+            value={selectedNode.subtitle}
+            onChange={(value) => onChange({ subtitle: value })}
+          />
+          <InputField
+            label="Metadata Key"
+            value={selectedNode.metadataKey ?? ""}
+            onChange={(value) => onChange({ metadataKey: value })}
+          />
+          <InputField
+            label="Metadata Value"
+            value={selectedNode.metadataValue ?? ""}
+            onChange={(value) => onChange({ metadataValue: value })}
+          />
+        </div>
+      )}
+
+      {selectedNode.kind === "task" && (
+        <div className="grid gap-3">
+          <InputField
+            label="Title"
+            value={selectedNode.title}
+            onChange={(value) => onChange({ title: value })}
+          />
+          <TextareaField
+            label="Description"
+            value={selectedNode.description ?? ""}
+            onChange={(value) =>
+              onChange({
+                description: value,
+                subtitle: value || selectedNode.subtitle,
+              })
+            }
+          />
+          <InputField
+            label="Assignee"
+            icon={<UserRound className="h-3.5 w-3.5" />}
+            value={selectedNode.assignee ?? ""}
+            onChange={(value) => onChange({ assignee: value })}
+          />
+          <InputField
+            label="Due Date"
+            icon={<CalendarDays className="h-3.5 w-3.5" />}
+            value={selectedNode.dueDate ?? ""}
+            onChange={(value) => onChange({ dueDate: value })}
+          />
+          <InputField
+            label="Custom Key"
+            value={selectedNode.customKey ?? ""}
+            onChange={(value) => onChange({ customKey: value })}
+          />
+          <InputField
+            label="Custom Value"
+            value={selectedNode.customValue ?? ""}
+            onChange={(value) => onChange({ customValue: value })}
+          />
+        </div>
+      )}
+
+      {selectedNode.kind === "approval" && (
+        <div className="grid gap-3">
+          <InputField
+            label="Title"
+            value={selectedNode.title}
+            onChange={(value) => onChange({ title: value })}
+          />
+          <TextareaField
+            label="Subtitle"
+            value={selectedNode.subtitle}
+            onChange={(value) => onChange({ subtitle: value })}
+          />
+          <InputField
+            label="Approver Role"
+            value={selectedNode.approverRole ?? ""}
+            onChange={(value) => onChange({ approverRole: value })}
+          />
+          <InputField
+            label="Auto-Approve Threshold"
+            type="number"
+            value={selectedNode.threshold ?? 0}
+            onChange={(value) =>
+              onChange({ threshold: value ? Number(value) : 0 })
+            }
+          />
+        </div>
+      )}
+
+      {selectedNode.kind === "automated" && (
+        <div className="grid gap-3">
+          <InputField
+            label="Title"
+            value={selectedNode.title}
+            onChange={(value) => onChange({ title: value })}
+          />
+          <TextareaField
+            label="Subtitle"
+            value={selectedNode.subtitle}
+            onChange={(value) => onChange({ subtitle: value })}
+          />
+          <SelectField
+            label="Automation Action"
+            value={selectedNode.actionId ?? activeAutomation?.id ?? ""}
+            options={automations.map((automation) => ({
+              value: automation.id,
+              label: automation.label,
+            }))}
+            onChange={(value) => {
+              const nextAutomation =
+                automations.find((automation) => automation.id === value) ??
+                automations[0];
+
+              const nextParams = Object.fromEntries(
+                (nextAutomation?.params ?? []).map((key) => [
+                  key,
+                  selectedNode.params?.[key] ?? "",
+                ])
+              );
+
+              onChange({
+                actionId: nextAutomation?.id,
+                actionLabel: nextAutomation?.label,
+                subtitle: nextAutomation?.description ?? selectedNode.subtitle,
+                params: nextParams,
+              });
+            }}
+          />
+
+          {(activeAutomation?.params ?? []).map((paramKey) => (
+            <InputField
+              key={paramKey}
+              label={prettyLabel(paramKey)}
+              value={selectedNode.params?.[paramKey] ?? ""}
+              onChange={(value) =>
+                onChange({
+                  params: {
+                    ...(selectedNode.params ?? {}),
+                    [paramKey]: value,
+                  },
+                })
+              }
+            />
+          ))}
+        </div>
+      )}
+
+      {selectedNode.kind === "end" && (
+        <div className="grid gap-3">
+          <InputField
+            label="Title"
+            value={selectedNode.title}
+            onChange={(value) => onChange({ title: value })}
+          />
+          <TextareaField
+            label="End Message"
+            value={selectedNode.endMessage ?? ""}
+            onChange={(value) =>
+              onChange({
+                endMessage: value,
+                subtitle: value || selectedNode.subtitle,
+              })
+            }
+          />
+          <ToggleField
+            label="Summary Flag"
+            checked={Boolean(selectedNode.summaryFlag)}
+            onChange={(checked) => onChange({ summaryFlag: checked })}
+          />
+        </div>
+      )}
 
       <button
         onClick={onDelete}
@@ -272,12 +384,12 @@ export function NodeConfigPreview({
         <div className="flex items-center gap-2 text-violet-700">
           <Sparkles className="h-4 w-4" />
           <p className="text-[11px] font-semibold uppercase tracking-[0.18em]">
-            standout factor
+            Standout factor
           </p>
         </div>
 
         <p className="mt-2 text-sm font-medium text-violet-900">
-          This is now a real editable inspector with dynamic automated-step fields.
+          Every node type has its own configurable form surface with controlled fields.
         </p>
 
         <p className="mt-3 text-xs text-violet-700">

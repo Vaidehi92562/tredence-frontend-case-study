@@ -8,6 +8,7 @@ export type ValidationIssue = {
   level: ValidationLevel;
   message: string;
   hint: string;
+  nodeId?: string;
 };
 
 export type ValidationResult = {
@@ -60,9 +61,7 @@ function detectCycle(nodes: Node<WorkflowNodeData>[], edges: Edge[]) {
   }
 
   for (const node of nodes) {
-    if (color.get(node.id) === "white") {
-      dfs(node.id);
-    }
+    if (color.get(node.id) === "white") dfs(node.id);
   }
 
   return hasCycle;
@@ -100,7 +99,7 @@ export function validateWorkflow(
       id: "end-multiple",
       level: "warning",
       message: `Workflow has ${ends.length} End nodes.`,
-      hint: "Multiple completion paths are okay if they are intentional.",
+      hint: "Multiple completion paths are okay when intentional.",
     });
   }
 
@@ -130,8 +129,9 @@ export function validateWorkflow(
       issues.push({
         id: `start-incoming-${node.id}`,
         level: "error",
-        message: `"${node.data.title}" is a Start node but has incoming connections.`,
+        message: `"${node.data.title}" is a Start node but has incoming edges.`,
         hint: "Start nodes should only trigger outward.",
+        nodeId: node.id,
       });
     }
 
@@ -139,8 +139,9 @@ export function validateWorkflow(
       issues.push({
         id: `end-outgoing-${node.id}`,
         level: "warning",
-        message: `"${node.data.title}" is an End node but still has outgoing connections.`,
-        hint: "End nodes usually terminate execution.",
+        message: `"${node.data.title}" is an End node but still has outgoing edges.`,
+        hint: "End nodes usually terminate the workflow.",
+        nodeId: node.id,
       });
     }
 
@@ -150,6 +151,7 @@ export function validateWorkflow(
         level: "warning",
         message: `"${node.data.title}" has no incoming connection.`,
         hint: "This step may never execute.",
+        nodeId: node.id,
       });
     }
 
@@ -159,6 +161,7 @@ export function validateWorkflow(
         level: "warning",
         message: `"${node.data.title}" has no outgoing connection.`,
         hint: "This step may block the workflow.",
+        nodeId: node.id,
       });
     }
   }
@@ -173,6 +176,7 @@ export function validateWorkflow(
         level: "warning",
         message: "Start node is not the left-most node in the graph.",
         hint: "Placing the entry node first improves readability.",
+        nodeId: start.id,
       });
     }
 
@@ -197,6 +201,7 @@ export function validateWorkflow(
           level: "warning",
           message: `"${node.data.title}" is unreachable from the Start node.`,
           hint: "Connect this step into the main flow.",
+          nodeId: node.id,
         });
       }
     }

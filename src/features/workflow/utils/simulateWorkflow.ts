@@ -1,4 +1,4 @@
-import type { Node } from "reactflow";
+import type { Edge, Node } from "reactflow";
 import type { WorkflowTemplateKey } from "../constants/templateFlows";
 import type { WorkflowNodeData } from "../types/workflow";
 
@@ -40,13 +40,66 @@ function getTemplateLabel(template: WorkflowTemplateKey) {
   }
 }
 
-function formatParams(params?: Record<string, string>) {
-  const entries = Object.entries(params ?? {}).filter(([, value]) => value?.trim());
-  if (!entries.length) return "";
-  return entries
-    .slice(0, 2)
-    .map(([key, value]) => `${key}: ${value}`)
-    .join(" • ");
+function topologicalOrder(
+  nodes: Node<WorkflowNodeData>[],
+  edges: Edge[]
+): Node<WorkflowNodeData>[] {
+  const nodeMap = new Map(nodes.map((node) => [node.id, node]));
+  const outgoing = new Map<string, string[]>();
+  const indegree = new Map<string, number>();
+
+  nodes.forEach((node) => {
+    outgoing.set(node.id, []);
+    indegree.set(node.id, 0);
+  });
+
+  edges.forEach((edge) => {
+    outgoing.get(edge.source)?.push(edge.target);
+    indegree.set(edge.target, (indegree.get(edge.target) ?? 0) + 1);
+  });
+
+  const queue = nodes
+    .filter((node) => (indegree.get(node.id) ?? 0) === 0)
+    .sort((a, b) =>
+      a.position.x === b.position.x
+        ? a.position.y - b.position.y
+        : a.position.x - b.position.x
+    );
+
+  const ordered: Node<WorkflowNodeData>[] = [];
+
+  while (queue.length) {
+    const current = queue.shift()!;
+    ordered.push(current);
+
+    const nextIds = outgoing.get(current.id) ?? [];
+    for (const nextId of nextIds) {
+      indegree.set(nextId, (indegree.get(nextId) ?? 1) - 1);
+      if ((indegree.get(nextId) ?? 0) === 0) {
+        const nextNode = nodeMap.get(nextId);
+        if (nextNode) queue.push(nextNode);
+        queue.sort((a, b) =>
+          a.position.x === b.position.x
+            ? a.position.y - b.position.y
+            : a.position.x - b.position.x
+        );
+      }
+    }
+  }
+
+  if (ordered.length < nodes.length) {
+    const remaining = nodes
+      .filter((node) => !ordered.some((item) => item.id === node.id))
+      .sort((a, b) =>
+        a.position.x === b.position.x
+          ? a.position.y - b.position.y
+          : a.position.x - b.position.x
+      );
+
+    ordered.push(...remaining);
+  }
+
+  return ordered;
 }
 
 function buildLog(
@@ -62,7 +115,7 @@ function buildLog(
         step: index + 1,
         time,
         title: node.data.title,
-        description: `Workflow initialized. ${node.data.subtitle}`,
+        description: `Workflow initialized from ${node.data.metadataValue ?? "workflow trigger"}.`,
         tone: "emerald",
       };
 
@@ -72,7 +125,7 @@ function buildLog(
         step: index + 1,
         time,
         title: node.data.title,
-        description: `${node.data.subtitle}${node.data.metaValue ? ` • ${node.data.metaValue}` : ""}`,
+        description: `${node.data.description ?? node.data.subtitle}${node.data.assignee ? ` • ${node.data.assignee}` : ""}`,
         tone: "sky",
       };
 
@@ -82,18 +135,23 @@ function buildLog(
         step: index + 1,
         time,
         title: node.data.title,
-        description: `Approval gate evaluated${node.data.metaValue ? ` • ${node.data.metaValue}` : ""}.`,
+        description: `${node.data.approverRole ?? "Approver"} gate evaluated${typeof node.data.threshold === "number" ? ` • threshold ${node.data.threshold}` : ""}.`,
         tone: "amber",
       };
 
     case "automated": {
-      const paramText = formatParams(node.data.params);
+      const paramText = Object.entries(node.data.params ?? {})
+        .filter(([, value]) => value?.trim())
+        .slice(0, 2)
+        .map(([key, value]) => `${key}: ${value}`)
+        .join(" • ");
+
       return {
         id: `${node.id}-${index}`,
         step: index + 1,
         time,
         title: node.data.title,
-        description: `${node.data.metaValue ?? node.data.actionId ?? "Automation"} executed${paramText ? ` • ${paramText}` : ""}.`,
+        description: `${node.data.actionLabel ?? "Automation"} executed${paramText ? ` • ${paramText}` : ""}.`,
         tone: "violet",
       };
     }
@@ -104,7 +162,7 @@ function buildLog(
         step: index + 1,
         time,
         title: node.data.title,
-        description: `Workflow completed. ${node.data.subtitle}`,
+        description: node.data.endMessage ?? node.data.subtitle,
         tone: "slate",
       };
 
@@ -122,16 +180,13 @@ function buildLog(
 
 export function simulateWorkflow(
   nodes: Node<WorkflowNodeData>[],
+  edges: Edge[],
   template: WorkflowTemplateKey
 ): {
   logs: SimulationLog[];
   summary: SimulationSummary;
 } {
-  const orderedNodes = [...nodes].sort((a, b) => {
-    if (a.position.x === b.position.x) return a.position.y - b.position.y;
-    return a.position.x - b.position.x;
-  });
-
+  const orderedNodes = topologicalOrder(nodes, edges);
   const logs = orderedNodes.map((node, index) => buildLog(node, index));
 
   const summary: SimulationSummary = {

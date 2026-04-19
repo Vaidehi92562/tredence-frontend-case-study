@@ -25,9 +25,7 @@ export function ValidationSummary({
               : "border-amber-200 bg-amber-50 text-amber-800"
           }`}
         >
-          <p className="text-[11px] uppercase tracking-[0.18em]">
-            Health score
-          </p>
+          <p className="text-[11px] uppercase tracking-[0.18em]">Health score</p>
           <p className="mt-1 text-2xl font-bold">{validation.score}</p>
         </div>
       </div>
@@ -37,15 +35,17 @@ export function ValidationSummary({
           <div className="rounded-2xl border border-emerald-200 bg-emerald-50 p-4 text-emerald-800">
             <div className="flex items-center gap-2">
               <CheckCircle2 className="h-4 w-4" />
-              <p className="text-sm font-semibold">Workflow looks structurally healthy.</p>
+              <p className="text-sm font-semibold">
+                Workflow looks structurally healthy.
+              </p>
             </div>
             <p className="mt-2 text-xs text-emerald-700">
-              Start/End structure and reachability checks look good.
+              Start/End structure, reachability, and cycle checks look good.
             </p>
           </div>
         ) : (
           <div className="space-y-3">
-            {validation.issues.slice(0, 4).map((issue) => (
+            {validation.issues.slice(0, 5).map((issue) => (
               <div
                 key={issue.id}
                 className={`rounded-2xl border p-3 ${
@@ -68,9 +68,9 @@ export function ValidationSummary({
               </div>
             ))}
 
-            {validation.issues.length > 4 && (
+            {validation.issues.length > 5 && (
               <div className="rounded-2xl border border-slate-200 bg-slate-50 p-3 text-xs text-slate-600">
-                + {validation.issues.length - 4} more issue(s)
+                + {validation.issues.length - 5} more issue(s)
               </div>
             )}
           </div>

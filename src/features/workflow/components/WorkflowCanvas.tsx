@@ -55,8 +55,8 @@ function PastelDecor() {
       <div className="absolute left-24 top-20 h-24 w-24 rotate-12 rounded-[28px] bg-gradient-to-br from-violet-200/50 to-fuchsia-200/25 shadow-[0_20px_60px_rgba(168,85,247,0.18)] animate-float-soft" />
       <div className="absolute left-[42%] top-10 h-16 w-16 -rotate-12 rounded-[22px] bg-gradient-to-br from-sky-200/45 to-cyan-100/30 shadow-[0_18px_50px_rgba(14,165,233,0.18)] animate-float-soft-delayed" />
       <div className="absolute right-24 top-28 h-20 w-20 rotate-6 rounded-[26px] bg-gradient-to-br from-emerald-200/45 to-teal-100/25 shadow-[0_20px_50px_rgba(16,185,129,0.16)] animate-float-soft-slower" />
-      <div className="absolute right-40 bottom-24 h-24 w-24 rotate-[18deg] rounded-[30px] bg-gradient-to-br from-amber-100/45 to-orange-200/25 shadow-[0_20px_55px_rgba(245,158,11,0.16)] animate-float-soft" />
-      <div className="absolute left-[28%] bottom-16 h-14 w-14 -rotate-[14deg] rounded-[18px] bg-gradient-to-br from-indigo-200/45 to-violet-100/30 shadow-[0_16px_40px_rgba(99,102,241,0.16)] animate-float-soft-delayed" />
+      <div className="absolute right-40 bottom-28 h-24 w-24 rotate-[18deg] rounded-[30px] bg-gradient-to-br from-amber-100/45 to-orange-200/25 shadow-[0_20px_55px_rgba(245,158,11,0.16)] animate-float-soft" />
+      <div className="absolute left-[28%] bottom-20 h-14 w-14 -rotate-[14deg] rounded-[18px] bg-gradient-to-br from-indigo-200/45 to-violet-100/30 shadow-[0_16px_40px_rgba(99,102,241,0.16)] animate-float-soft-delayed" />
     </div>
   );
 }
@@ -68,6 +68,8 @@ function CanvasInner({
   onNodesChange,
   onEdgesChange,
   onSelectNode,
+  onSelectEdge,
+  onClearSelection,
   onAddNode,
   onConnect,
 }: {
@@ -82,6 +84,8 @@ function CanvasInner({
   onNodesChange: (changes: NodeChange[]) => void;
   onEdgesChange: (changes: EdgeChange[]) => void;
   onSelectNode: (node: SelectedWorkflowNode) => void;
+  onSelectEdge: (edgeId: string) => void;
+  onClearSelection: () => void;
   onAddNode: (
     kind: WorkflowNodeKind,
     position: { x: number; y: number }
@@ -120,7 +124,7 @@ function CanvasInner({
 
   return (
     <div
-      className="relative h-[520px] overflow-hidden rounded-[28px] border border-slate-200 bg-[radial-gradient(circle_at_top_left,_rgba(99,102,241,0.10),_transparent_24%),radial-gradient(circle_at_top_right,_rgba(14,165,233,0.10),_transparent_22%),linear-gradient(to_right,rgba(148,163,184,0.10)_1px,transparent_1px),linear-gradient(to_bottom,rgba(148,163,184,0.10)_1px,transparent_1px)] bg-[size:auto,auto,32px_32px,32px_32px]"
+      className="relative h-[640px] overflow-hidden rounded-[30px] border border-slate-200 bg-[radial-gradient(circle_at_top_left,_rgba(99,102,241,0.10),_transparent_24%),radial-gradient(circle_at_top_right,_rgba(14,165,233,0.10),_transparent_22%),linear-gradient(to_right,rgba(148,163,184,0.10)_1px,transparent_1px),linear-gradient(to_bottom,rgba(148,163,184,0.10)_1px,transparent_1px)] bg-[size:auto,auto,28px_28px,28px_28px]"
       onDragOver={handleDragOver}
       onDrop={handleDrop}
     >
@@ -159,18 +163,24 @@ function CanvasInner({
             ...node.data,
           })
         }
+        onEdgeClick={(event, edge) => {
+          event.stopPropagation();
+          onSelectEdge(edge.id);
+        }}
+        onPaneClick={onClearSelection}
         fitView
-        fitViewOptions={{ padding: 0.22 }}
-        minZoom={0.55}
-        maxZoom={1.6}
+        fitViewOptions={{ padding: 0.16 }}
+        minZoom={0.45}
+        maxZoom={1.8}
         connectionLineStyle={{ stroke: "#7c3aed", strokeWidth: 2.5 }}
         defaultEdgeOptions={{ animated: true }}
         snapToGrid
         snapGrid={[16, 16]}
         proOptions={{ hideAttribution: true }}
+        deleteKeyCode={["Delete", "Backspace"]}
         className="bg-transparent"
       >
-        <Background gap={32} size={1} color="#cbd5e1" />
+        <Background gap={28} size={1} color="#d5dbe7" />
         <MiniMap
           nodeColor={miniMapColor}
           nodeStrokeWidth={3}
@@ -181,7 +191,7 @@ function CanvasInner({
         <Controls position="bottom-right" />
       </ReactFlow>
 
-      <div className="pointer-events-none absolute bottom-4 left-1/2 z-10 w-[92%] -translate-x-1/2">
+      <div className="pointer-events-none absolute bottom-4 left-1/2 z-10 w-[94%] -translate-x-1/2">
         <div className="grid grid-cols-2 gap-3 rounded-[24px] border border-white/80 bg-white/85 p-3 shadow-xl backdrop-blur md:grid-cols-4">
           <div className="rounded-2xl bg-gradient-to-r from-violet-50 to-indigo-50 p-3">
             <p className="text-[11px] uppercase tracking-[0.18em] text-violet-600">Flow depth</p>
@@ -219,6 +229,8 @@ export function WorkflowCanvas({
   onNodesChange,
   onEdgesChange,
   onSelectNode,
+  onSelectEdge,
+  onClearSelection,
   onAddNode,
   onConnect,
 }: {
@@ -233,6 +245,8 @@ export function WorkflowCanvas({
   onNodesChange: (changes: NodeChange[]) => void;
   onEdgesChange: (changes: EdgeChange[]) => void;
   onSelectNode: (node: SelectedWorkflowNode) => void;
+  onSelectEdge: (edgeId: string) => void;
+  onClearSelection: () => void;
   onAddNode: (
     kind: WorkflowNodeKind,
     position: { x: number; y: number }
@@ -248,6 +262,8 @@ export function WorkflowCanvas({
         onNodesChange={onNodesChange}
         onEdgesChange={onEdgesChange}
         onSelectNode={onSelectNode}
+        onSelectEdge={onSelectEdge}
+        onClearSelection={onClearSelection}
         onAddNode={onAddNode}
         onConnect={onConnect}
       />
