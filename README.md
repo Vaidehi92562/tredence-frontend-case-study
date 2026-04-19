@@ -1,73 +1,84 @@
-# React + TypeScript + Vite
+# HRFlow Studio – Tredence Frontend Case Study
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+HRFlow Studio is a polished frontend prototype for an HR workflow designer built with React, TypeScript, Tailwind CSS, and React Flow.
 
-Currently, two official plugins are available:
+It is designed to feel less like a coursework submission and more like an early-stage internal product.
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+## Overview
 
-## React Compiler
+This project focuses on building a mini HR workflow designer where a reviewer can:
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+- load workflow templates
+- drag nodes onto a live canvas
+- connect workflow steps
+- edit node details in a live configuration panel
+- configure automated steps with dynamic parameter fields
+- validate workflow structure in real time
+- simulate execution of the workflow
+- export the current workflow as JSON
 
-## Expanding the ESLint configuration
+## Features implemented
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+- cinematic intro splash screen
+- premium product-style UI
+- React Flow powered workflow canvas
+- draggable node library
+- custom nodes for:
+  - Start
+  - Task
+  - Approval
+  - Automated Step
+  - End
+- template switching
+- live node editing
+- dynamic automated-step form
+- mock API layer
+- workflow validation:
+  - single Start node check
+  - End node presence
+  - unreachable node detection
+  - missing incoming/outgoing edge checks
+  - cycle detection
+  - Start/End structure validation
+- simulation timeline with execution logs
+- export JSON
+- copy JSON
+- reset template
 
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
+## Tech stack
 
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
+- React
+- TypeScript
+- Vite
+- Tailwind CSS
+- React Flow
+- Lucide React
 
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
-```
+## Folder structure
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
-
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
-
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
-```
+```text
+src/
+  components/
+    layout/
+      AppShell.tsx
+  features/
+    workflow/
+      api/
+        mockWorkflowApi.ts
+      components/
+        WorkflowCanvas.tsx
+      constants/
+        templateFlows.ts
+      nodes/
+        PremiumNode.tsx
+      panels/
+        NodeConfigPreview.tsx
+        ValidationSummary.tsx
+      types/
+        workflow.ts
+      utils/
+        simulateWorkflow.ts
+        validateWorkflow.ts
+  App.tsx
+  main.tsx
+  index.css
