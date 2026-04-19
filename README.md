@@ -1,8 +1,17 @@
 # HRFlow Studio – Tredence Frontend Case Study
 
-HRFlow Studio is a polished frontend prototype for an HR workflow designer built with React, TypeScript, Tailwind CSS, and React Flow.
+HRFlow Studio is a polished frontend prototype for an HR workflow designer built with **React, TypeScript, Tailwind CSS, and React Flow**.
 
-It is designed to feel less like a coursework submission and more like an early-stage internal product.
+It is designed to feel less like a coursework submission and more like an early-stage internal product for People Operations teams.
+
+---
+
+## Project Link
+
+**GitHub Repository:**  
+[https://github.com/Vaidehi92562/tredence-frontend-case-study](https://github.com/Vaidehi92562/tredence-frontend-case-study)
+
+---
 
 ## Overview
 
@@ -17,68 +26,75 @@ This project focuses on building a mini HR workflow designer where a reviewer ca
 - simulate execution of the workflow
 - export the current workflow as JSON
 
-## Features implemented
+The goal was to create something that demonstrates not just React Flow usage, but also **frontend architecture, product thinking, UI quality, controlled forms, and graph-based reasoning**.
+
+---
+
+## Features Implemented
 
 - cinematic intro splash screen
 - premium product-style UI
 - React Flow powered workflow canvas
 - draggable node library
-- custom nodes for:
+- custom workflow nodes:
   - Start
   - Task
   - Approval
   - Automated Step
   - End
-- template switching
-- live node editing
-- dynamic automated-step form
-- mock API layer
-- workflow validation:
-  - single Start node check
-  - End node presence
-  - unreachable node detection
-  - missing incoming/outgoing edge checks
-  - cycle detection
-  - Start/End structure validation
+- template switching for multiple HR workflows
+- editable configuration panel for every node type
+- dynamic automated-step forms driven by mock automation metadata
+- mock API integration
+- workflow validation in real time
 - simulation timeline with execution logs
 - export JSON
 - copy JSON
 - reset template
+- minimap and zoom controls
+- delete selected nodes and edges
 
-## Tech stack
+---
 
-- React
-- TypeScript
-- Vite
-- Tailwind CSS
-- React Flow
-- Lucide React
+## Tech Stack
 
-## Folder structure
+- **React**
+- **TypeScript**
+- **Vite**
+- **Tailwind CSS**
+- **React Flow**
+- **Lucide React**
 
-```text
-src/
-  components/
-    layout/
-      AppShell.tsx
-  features/
-    workflow/
-      api/
-        mockWorkflowApi.ts
-      components/
-        WorkflowCanvas.tsx
-      constants/
-        templateFlows.ts
-      nodes/
-        PremiumNode.tsx
-      panels/
-        NodeConfigPreview.tsx
-        ValidationSummary.tsx
-      types/
-        workflow.ts
-      utils/
-        simulateWorkflow.ts
-        validateWorkflow.ts
-  App.tsx
-  main.tsx
-  index.css
+---
+
+## Architecture
+
+The application is structured around a modular workflow-builder architecture:
+
+- `src/components/layout`
+  - application shell and overall page composition
+- `src/features/workflow/components`
+  - React Flow canvas and interaction surface
+- `src/features/workflow/nodes`
+  - reusable custom node UI
+- `src/features/workflow/panels`
+  - live configuration panel and validation panel
+- `src/features/workflow/api`
+  - mock API layer for automation metadata and workflow simulation
+- `src/features/workflow/utils`
+  - workflow validation and simulation logic
+- `src/features/workflow/constants`
+  - starter template flows and default graph data
+- `src/features/workflow/types`
+  - shared TypeScript interfaces for workflow nodes
+
+This separation keeps rendering, graph logic, form state, and API simulation independent and easier to extend.
+
+---
+
+## How to Run
+
+Install dependencies:
+
+```bash
+npm install
