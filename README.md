@@ -12,7 +12,7 @@ It is designed to feel less like a coursework submission and more like an early-
 [https://github.com/Vaidehi92562/tredence-frontend-case-study](https://github.com/Vaidehi92562/tredence-frontend-case-study)
 
 ---
-
+For application-specific response items, see: [docs/APPLICATION_RESPONSE_ITEMS.md](docs/APPLICATION_RESPONSE_ITEMS.md)
 ## Overview
 
 This project focuses on building a mini HR workflow designer where a reviewer can:
